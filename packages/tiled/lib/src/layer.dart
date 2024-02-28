@@ -270,6 +270,28 @@ abstract class Layer {
     return layer;
   }
 
+  XmlElement export(Saver exporter) {
+    switch (type) {
+      case LayerType.objectGroup:
+        return exporter.exportObjectGroup(this as ObjectGroup);
+      case LayerType.tileLayer:
+        return exporter.exportTileLayer(this as TileLayer);
+      default:
+        throw UnimplementedError(); // TODO: handle other cases
+    }
+  }
+
+  void build(TiledBuilder builder) {
+    switch (type) {
+      case LayerType.objectGroup:
+        builder.buildObjectGroup(this as ObjectGroup);
+      case LayerType.tileLayer:
+        builder.buildTileLayer(this as TileLayer);
+      default:
+        throw UnimplementedError(); // TODO: handle other cases
+    }
+  }
+
   static List<Layer> parseLayers(Parser parser) {
     return parser.formatSpecificParsing(
       (json) => json.getChildrenAs('layers', Layer.parse),

@@ -382,4 +382,114 @@ class TiledMap {
       properties: properties,
     );
   }
+  XmlDocument build() {
+    final builder = XmlBuilder();
+    final tiledBuilder = XmlTiledBuilder(builder: builder);
+    builder.processing('xml', 'version="$version"');
+    builder.attribute('encoding', 'UTF-8');
+    // map
+    builder.element('map', nest: () {
+      builder.attribute('version', '1.9');
+      builder.attribute("tiledversion", tiledVersion ?? "1.9.2");
+      builder.attribute("orientation", "orthogonal");
+      builder.attribute("renderorder", renderOrder);
+      builder.attribute("width", width);
+      builder.attribute("height", height);
+      builder.attribute("tilewidth", tileWidth);
+      builder.attribute("tileheight", tileWidth);
+      builder.attribute("infinite", "0");
+      builder.attribute("type", type);
+      if (backgroundColorHex != null) {
+        builder.attribute("backgroundcolor", backgroundColorHex);
+      }
+      builder.attribute("hexSideLength", hexSideLength);
+      builder.attribute("compressionlevel", compressionLevel);
+      if (staggerAxis != null) builder.attribute("staggerAxis", staggerAxis);
+      if (staggerIndex != null) builder.attribute("staggerIndex", staggerIndex);
+      builder.attribute("nextlayerid", nextLayerId ?? 1);
+      builder.attribute("nextobjectid", nextObjectId ?? 1);
+      // Controller properties
+      builder.element('properties', nest: () {
+        properties.forEach((prop) {
+          builder.element('property', nest: () {
+            builder.attribute('name', prop.name);
+            builder.attribute('type', prop.type);
+            builder.attribute('value', prop.value);
+          });
+        });
+      });
+      // main layer
+      if (layers.isEmpty || layers.whereType<TileLayer>().isEmpty) {
+        builder.element('layer', nest: () {
+          builder.attribute('id', 1);
+          builder.attribute('name', 'datalayer');
+          builder.attribute("width", width);
+          builder.attribute("height", height);
+          builder.element('data', nest: () {
+            builder.attribute('encoding', 'csv');
+            builder.text(
+                List.generate((width * height).floor(), (int index) => 0)
+                    .join(','));
+          });
+        });
+      }
+      // TODO: tilesets
+
+      // TODO: editorsettings
+
+      layers.forEach((element) => element.build(tiledBuilder));
+
+      // widgets
+      // TODO: next feature update
+      // widgets.forEach((widget) {
+      //   parseWidget(widget, builder);
+      // });
+    });
+    return builder.buildDocument();
+  }
+
+  XmlDocument saveTiledMap(
+      {required Saver builder, required XmlDocument document}) {
+    // LAYERS
+
+    bool validLayer(List<Layer> layer, XmlElement element) => layers
+        .where((layer) => layer.id == int.parse(element.getAttribute('id')!))
+        .isNotEmpty;
+    List<int> existingWgts = [];
+    final childrenNames = {
+      'objectgroup',
+      'layer'
+    }; // TODO: group, imagelayer, ...
+
+    document.rootElement.children
+        .whereType<XmlElement>()
+        .where((e) => childrenNames.contains(e.name.local))
+        .where((element) =>
+            element.getAttribute('id') != null && validLayer(layers, element))
+        .forEach((element) {
+      element.replace(layers
+          .singleWhere(
+              (layer) => layer.id == int.parse(element.getAttribute('id')!))
+          .export(builder));
+      existingWgts.add(int.parse(element.getAttribute('id')!));
+    });
+    layers
+        .where(
+      (id) => !existingWgts.contains(id),
+    )
+        .forEach((layer) {
+      document.rootElement.children.add(layer.export(builder));
+    });
+
+    // FIXME: Compare with the higher ID found in the map
+    if (nextLayerId != null) {
+      document.rootElement.setAttribute('nextlayerid', nextLayerId.toString());
+    }
+    if (nextObjectId != null) {
+      document.rootElement
+          .setAttribute('nextobjectid', nextObjectId.toString());
+    }
+    return document;
+    // return backend.save(map.path, document.toXmlString());
+  }
 }

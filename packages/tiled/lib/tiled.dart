@@ -38,3 +38,5 @@ part 'src/tileset/wang/wang_color.dart';
 part 'src/tileset/wang/wang_set.dart';
 part 'src/tileset/wang/wang_tile.dart';
 part 'src/tsx_provider.dart';
+part 'src/saver.dart';
+part 'src/tiled_builder.dart';

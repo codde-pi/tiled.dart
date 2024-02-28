@@ -227,3 +227,15 @@ extension PropertiesParser on Parser {
     return CustomProperties(byName);
   }
 }
+
+extension PropertiesBuilder on Saver {
+  XmlElement setProperties(CustomProperties properties) {
+    Iterable<XmlElement> props =
+        properties.map((prop) => XmlElement(XmlName('property'), [
+              XmlAttribute(XmlName("name"), prop.name),
+              XmlAttribute(XmlName("value"), prop.value.toString()),
+              XmlAttribute(XmlName("type"), prop.type.name),
+            ]));
+    return XmlElement(XmlName('properties'), [], props);
+  }
+}
