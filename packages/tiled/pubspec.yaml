@@ -4,7 +4,7 @@ description: A Dart Tiled library. Parse your TMX files into useful representati
 homepage: https://github.com/flame-engine/tiled.dart
 
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   archive: ^3.3.0

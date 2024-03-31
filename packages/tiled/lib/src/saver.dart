@@ -63,7 +63,7 @@ abstract class Saver {
 List<(String, dynamic)> getBaseAttrs(Layer layer) => [
       if (layer.id != null) ('id', layer.id!),
       ('name', layer.name),
-      if (layer.class_ != null) ('class_', layer.class_!),
+      if (layer.class_ != null) ('class', layer.class_!),
       ('x', layer.x),
       ('y', layer.y),
       ('offsetx', layer.offsetX),
